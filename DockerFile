@@ -4,16 +4,21 @@ FROM python:3.11
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy all files to the container
+# Copy only requirements first (to optimize caching)
+COPY requirements.txt /app/
+
+# Install dependencies before copying everything else
+RUN pip install --upgrade pip \
+    && pip install -r requirements.txt
+
+# Copy the rest of the app files
 COPY . /app
 
-# Install dependencies
-RUN pip install --upgrade pip \
-    && pip install -r requirements.txt 
+# Run pickle file generation before starting the server
+RUN python generate_pickles.py
 
 # Expose ports for Flask and Streamlit
 EXPOSE 5000 8501
 
 # Start both Flask and Streamlit
 CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:5000 app:app & streamlit run streamlit_app.py --server.port 8501 --server.address 0.0.0.0"]
-

@@ -2,7 +2,6 @@ from flask import Flask, render_template, redirect, request
 from src.pipelines.Models import model_dict
 from src.helper import datasets_path, json_load
 
-
 app = Flask(__name__)
 
 

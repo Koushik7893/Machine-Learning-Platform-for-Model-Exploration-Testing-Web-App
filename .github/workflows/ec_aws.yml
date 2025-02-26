@@ -1,0 +1,83 @@
+name: CI/CD - Push Docker Hub Image to AWS ECR
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+
+permissions:
+  contents: read
+
+jobs:
+  pull-and-push-to-ecr:
+    name: Transfer Image from Docker Hub to AWS ECR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Pull Image from Docker Hub
+        env:
+          IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/vizualize-ml
+        run: |
+          docker pull $IMAGE_NAME:latest
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Tag and Push Image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
+          IMAGE_TAG: latest
+        run: |
+          docker tag ${{ secrets.DOCKER_USERNAME }}/vizualize-ml:latest $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Save Image Name for Deployment
+        run: echo "IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
+
+  deploy-from-ecr:
+    name: Deploy to Server from AWS ECR
+    needs: pull-and-push-to-ecr
+    runs-on: self-hosted
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Pull Latest Docker Image from ECR
+        run: docker pull ${{ env.IMAGE }}
+
+      - name: Stop and Remove Existing Container (if running)
+        run: |
+          CONTAINER_ID=$(docker ps -aq --filter "name=my-ml-app")
+          if [ -n "$CONTAINER_ID" ]; then
+            docker stop my-ml-app
+            docker rm -fv my-ml-app
+          fi
+
+      - name: Run Docker Container
+        run: |
+          docker run -d -p 5000:5000 --name=my-ml-app \
+            ${{ env.IMAGE }}
+
+      - name: Clean Up Docker Images
+        run: docker system prune -f
