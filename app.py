@@ -66,6 +66,8 @@ def explore():
     name = request.args.get('name')          ## eg: 'iris' or 'classification'
     which = request.args.get('which')        ## eg: is it dataset or model
     types = request.args.get('types')        ## eg: 'classification' or 'regression'
+    return redirect(f"http://3.92.136.49:8501/?page={which}&select={option}&name={name}&types={types}")
+
     return redirect(f"http://localhost:8501/?page={which}&select={option}&name={name}&types={types}")
 
 
