@@ -109,9 +109,10 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Pull Latest Docker Image from ECR
-        run: docker pull ${{ env.IMAGE }}
+      
+      - name: Pull latest images
+        run: |
+          docker pull ${{secrets.AWS_ECR_LOGIN_URI}}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
 
       - name: Stop and Remove Existing Container (if running)
         run: |
@@ -123,8 +124,8 @@ jobs:
 
       - name: Run Docker Container
         run: |
-          docker run -d -p 5000:5000 --name=my-ml-app \
-            ${{ env.IMAGE }}
+          docker run -d -p 5000:5000 --name=my-ml-app -e 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' -e 'AWS_REGION=${{ secrets.AWS_REGION }}'  ${{secrets.AWS_ECR_LOGIN_URI}}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+            
 
       - name: Clean Up Docker Images
         run: docker system prune -f
