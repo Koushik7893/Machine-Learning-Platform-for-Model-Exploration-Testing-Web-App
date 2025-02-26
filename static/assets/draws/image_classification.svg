@@ -1,0 +1,10 @@
+<svg id="image-classification-icon" xmlns="http://www.w3.org/2000/svg" width="869" height="634.74" viewBox="0 0 869 634.74">
+  <style>
+    .bg-color { fill: #90CAF9; }  <!-- Light blue for image classification -->
+    .text-color { fill: #2196F3; } <!-- Darker blue text -->
+  </style>
+  <title>Image Classification</title>
+  <rect x="162.16" y="66.61" width="216.47" height="27.06" class="text-color"/>
+  <rect x="163.39" y="116.56" width="81.18" height="27.06" class="text-color"/>
+  <path d="M201.38,132.63H670.79c19.82,0,35.88,16.29,35.88,36.39V477.85c0,20.1-16.06,36.39-35.88,36.39H398.38c-9.07,31.52-31.85,75-89.13,94.33l16.18-94.33h-124c-19.82,0-35.88-16.29-35.88-36.39V169C165.5,148.92,181.56,132.63,201.38,132.63Z" class="bg-color"/>
+</svg>

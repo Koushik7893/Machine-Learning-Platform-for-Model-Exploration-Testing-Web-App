@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ML & DL Showcase</title>
+    <style>
+        /* Basic styling for layout */
+        body {
+            display: flex;
+            font-family: Arial, sans-serif;
+        }
+        .sidebar {
+            width: 250px;
+            padding: 20px;
+            background-color: #f2f2f2;
+            border-right: 1px solid #ddd;
+        }
+        .content {
+            flex-grow: 1;
+            padding: 20px;
+        }
+        .chatbox {
+            margin-top: 20px;
+        }
+        .response {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Chatbot</h2>
+        <form action="/" method="POST" class="chatbox">
+            <label for="question">Ask me anything:</label>
+            <input type="text" id="question" name="question" required>
+            <button type="submit">Submit</button>
+        </form>
+        
+        {% if chatbot_response %}
+            <div class="response">
+                <p><strong>Chatbot:</strong> {{ chatbot_response }}</p>
+            </div>
+        {% endif %}
+    </div>
+    
+</body>
+</html>
