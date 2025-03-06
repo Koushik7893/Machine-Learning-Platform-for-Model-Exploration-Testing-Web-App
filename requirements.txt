@@ -16,3 +16,6 @@ flask_migrate
 flask_bcrypt 
 psycopg2
 werkzeug
+transformers
+openai
+langchain-openai
