@@ -26,7 +26,7 @@
     <header class="bg-dark">
       <div class="container">
         <nav class="navbar navbar-expand-md no-gutters">
-          <div class="col-2 text-left">
+          <div class="col-3 text-left">
             <a class="navbar-brand">
               <img src="../static/assets/imgs/logo.png" height="30" alt="image">
             </a>
@@ -36,8 +36,8 @@
             <span class="navbar-toggler-icon"></span>
           </button>
     
-          <div class="collapse navbar-collapse " id="navbarNav12">
-            <ul class="navbar-nav ml-auto">
+          <div class="collapse navbar-collapse navbar-collapse-4 justify-content-center col-md-6" id="navbarNav15">
+            <ul class="navbar-nav justify-content-center">
               <li class="nav-item active">
                 <a class="nav-link" href="{{ url_for('home') }}">Home <span class="sr-only">(current)</span></a>
               </li>
@@ -52,6 +52,26 @@
               </li>
             </ul>
           </div>
+          {% if status == 400: %}
+          <div class="collapse navbar-collapse navbar-collapse-4">
+            <ul class="navbar-nav ml-auto justify-content-end">
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('login') }}">Log In</a>
+              </li>
+            </ul>
+    
+            <a class="btn btn-primary ml-md-3" href="{{ url_for('register') }}">Register</a>
+          </div>
+          {% else: %}
+          <div class="collapse navbar-collapse navbar-collapse-4">
+            <ul class="navbar-nav ml-auto justify-content-end">
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('profile') }}">Profile</a>
+              </li>
+              <a class="btn btn-primary ml-md-3" href="{{ url_for('logout') }}">Logout</a>
+            </ul>
+          </div>
+          {% endif %}
         </nav>
       </div>
     </header>

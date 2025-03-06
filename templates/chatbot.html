@@ -1,49 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>ML & DL Showcase</title>
-    <style>
-        /* Basic styling for layout */
-        body {
-            display: flex;
-            font-family: Arial, sans-serif;
-        }
-        .sidebar {
-            width: 250px;
-            padding: 20px;
-            background-color: #f2f2f2;
-            border-right: 1px solid #ddd;
-        }
-        .content {
-            flex-grow: 1;
-            padding: 20px;
-        }
-        .chatbox {
-            margin-top: 20px;
-        }
-        .response {
-            margin-top: 10px;
-            font-weight: bold;
-            color: #333;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Chatbot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      width: 25%;
+      background-color: #2c3e50;
+      color: white;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .sidebar h3 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    .session {
+      padding: 10px;
+      margin: 5px 0;
+      cursor: pointer;
+      border-bottom: 1px solid #34495e;
+      text-align: center;
+    }
+
+    .session a {
+      color: white;
+      text-decoration: none;
+      display: block;
+    }
+
+    .session:hover {
+      background-color: #34495e;
+    }
+
+    .new-session {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .new-session input, .new-session button {
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    .new-session button {
+      background-color: #3498db;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* Chat Area */
+    .chat-container {
+      width: 75%;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      background: white;
+      box-shadow: -3px 0px 10px rgba(0,0,0,0.1);
+    }
+
+    .chat-box {
+      flex: 1;
+      padding: 15px;
+      border-radius: 5px;
+      background-color: #fff;
+      overflow-y: auto;
+      max-height: 500px;
+      border: 1px solid #ddd;
+    }
+
+    .user-message, .bot-message {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      max-width: 80%;
+    }
+
+    .user-message {
+      background-color: #007bff;
+      color: white;
+      align-self: flex-end;
+      text-align: right;
+    }
+
+    .bot-message {
+      background-color: #28a745;
+      color: white;
+      align-self: flex-start;
+      text-align: left;
+    }
+
+    /* Chat Input */
+    .chat-input {
+      display: flex;
+      margin-top: 10px;
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .chat-input button {
+      padding: 10px;
+      margin-left: 5px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* Redirect to Profile Page */
+    .update-profile {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .update-profile a {
+      color: #f39c12;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-    <div class="sidebar">
-        <h2>Chatbot</h2>
-        <form action="/" method="POST" class="chatbox">
-            <label for="question">Ask me anything:</label>
-            <input type="text" id="question" name="question" required>
-            <button type="submit">Submit</button>
-        </form>
-        
-        {% if chatbot_response %}
-            <div class="response">
-                <p><strong>Chatbot:</strong> {{ chatbot_response }}</p>
-            </div>
-        {% endif %}
+
+  <!-- Sidebar for Sessions -->
+  <div class="sidebar">
+    <h3>Chat Sessions</h3>
+    <div id="session-list">
+      {% for sess in user_sessions %}
+        <div class="session">
+          <a href="{{ url_for('chatbot') }}?session_id={{ sess.session_id }}">
+            {{ sess.session_id }}
+          </a>
+        </div>
+      {% endfor %}
     </div>
-    
+    <!-- New Session -->
+    <form action="{{ url_for('create_new_session') }}" method="post" class="new-session">
+      <input type="text" name="session_id" placeholder="Enter Session ID" required>
+      <button type="submit">Create Session</button>
+    </form>
+  </div>
+
+  <!-- Chat Area -->
+  <div class="chat-container">
+    <h2>Chatbot</h2>
+
+    <!-- Redirect to Profile if No API Key -->
+    {% if not groq_api_key %}
+    <div class="update-profile">
+      <p>No API Key found! Please update your <a href="{{ url_for('profile') }}">profile</a> to proceed.</p>
+    </div>
+    {% else %}
+    <!-- Chat History -->
+    <div class="chat-box" id="chat-box">
+      {% if chat_history %}
+        {% for chat in chat_history %}
+        {% if 'user' == chat.role %}
+          <div class="user-message"><strong>You:</strong> {{ chat.content }}</div>
+        {% else %}
+          <div class="bot-message"><strong>Bot:</strong> {{ chat.content }}</div>
+        {% endif %}
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    <!-- Chat Input -->
+    <form action="{{ url_for('chatbot') }}" method="post" class="chat-input">
+      <input type="hidden" name="session_id" value="{{ current_session_id or '' }}">
+      <input type="text" name="question" placeholder="Type your message..." required>
+      <button type="submit">Send</button>
+    </form>
+    {% endif %}
+  </div>
+  
 </body>
 </html>

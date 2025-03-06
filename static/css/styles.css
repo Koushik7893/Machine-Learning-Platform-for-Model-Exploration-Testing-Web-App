@@ -1288,3 +1288,132 @@ header + header {
 .bg-gray {
   background-color: #f4f7fe;
   color: #444444; }
+
+
+  /* ------------------------------------------------------------ CHAT BOT CSS ------------------------------------------------------------------ */
+  /* Sidebar */
+  /* .sidebar {
+    width: 25%;
+    background-color: #2c3e50;
+    color: white;
+    padding: 20px;
+    overflow-y: auto;
+  }
+
+  .sidebar h3 {
+    margin-top: 0;
+    text-align: center;
+  }
+
+  .session {
+    padding: 10px;
+    margin: 5px 0;
+    cursor: pointer;
+    border-bottom: 1px solid #34495e;
+    text-align: center;
+  }
+
+  .session a {
+    color: white;
+    text-decoration: none;
+    display: block;
+  }
+
+  .session:hover {
+    background-color: #34495e;
+  }
+
+  .new-session {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .new-session input, .new-session button {
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+  }
+
+  .new-session button {
+    background-color: #3498db;
+    color: white;
+    cursor: pointer;
+  }
+
+  /* Chat Area */
+  .chat-container {
+    width: 75%;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background: white;
+    box-shadow: -3px 0px 10px rgba(0,0,0,0.1);
+  }
+
+  .chat-box {
+    flex: 1;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #fff;
+    overflow-y: auto;
+    max-height: 500px;
+    border: 1px solid #ddd;
+  }
+
+  .user-message, .bot-message {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+    max-width: 80%;
+  }
+
+  .user-message {
+    background-color: #007bff;
+    color: white;
+    align-self: flex-end;
+    text-align: right;
+  }
+
+  .bot-message {
+    background-color: #28a745;
+    color: white;
+    align-self: flex-start;
+    text-align: left;
+  }
+
+  /* Chat Input */
+  .chat-input {
+    display: flex;
+    margin-top: 10px;
+  }
+
+  .chat-input input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+
+  .chat-input button {
+    padding: 10px;
+    margin-left: 5px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  /* Redirect to Profile Page */
+  .update-profile {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .update-profile a {
+    color: #f39c12;
+    text-decoration: none;
+    font-weight: bold;
+  } */
