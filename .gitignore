@@ -1,5 +1,8 @@
 Om.ipynb
 qwq.ipynb
-artifacts
+artifacts/classification
+artifacts/images
+artifacts/regression
+artifacts/*.json
 misc.txt
 .env
