@@ -2,7 +2,7 @@ from src.components.DataIngestion import Data
 from src.pipelines.Models import ModelIntializer
 from src.pipelines.ModelParams import ParamsInit
 from src.components.DataTransformation import ColumnTransformWithSplit
-from src.helper import datasets_path, save_pkl_file, load_pkl_file, compute_classification_results, compute_regression_results, all_results_json
+from src.helper import datasets_path, save_pkl_file, load_pkl_file, compute_classification_results, compute_regression_results, all_results_json, datasets_info
 import os
 columntransformsplit = ColumnTransformWithSplit()
 mod_int = ModelIntializer()
@@ -20,6 +20,7 @@ class ModelTraining:
         return model_res
     
     def TrainAllDatasets(self):
+        datasets_info()
         results = {}
         for typetotrain in list(self.datasets_info.keys()):    ## Classification, regression, etc.
             datasets_res = {}
