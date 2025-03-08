@@ -293,7 +293,7 @@ def explore():
     if "user_id" not in session:
         return redirect(url_for('login'))
     
-    return redirect(f"http://54.91.136.88:8501/?page={which}&select={option}&name={name}&types={types}&session={session['user_id']}")
+    return redirect(f"http://54.175.241.196:8501/?page={which}&select={option}&name={name}&types={types}&session={session['user_id']}")
     # return redirect(f"http://localhost:8501/?page={which}&select={option}&name={name}&types={types}&session={session['user_id']}")
 
 
