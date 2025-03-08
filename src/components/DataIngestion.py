@@ -5,7 +5,10 @@ from src.helper import load_pkl_file
 warnings.filterwarnings('ignore')
 
 def clean_dataset(dataset_path):
-    data = pd.read_csv(f'{dataset_path}')
+    if type(dataset_path) == str:    
+        data = pd.read_csv(f'{dataset_path}')
+    else:
+        data = pd.read_csv(dataset_path)
     if 'Unnamed: 0' in data.columns:
         data.drop(columns='Unnamed: 0', inplace=True)
         return data
@@ -35,27 +38,40 @@ class Data:
         categorical_features = [feature for feature in self.data.columns if self.data[feature].dtype == "O"]
         return numeric_features, categorical_features
         
-    def dataprocessing(self, cts, ctpath, lepath):
+    def encoder(self,cts):
+            y_encoder = cts.label_encoder()
+            self.y = y_encoder.fit_transform(self.y)
+            return y_encoder
+        
+    def xencoder(self, cts, numeric_features, categorical_features, X_train, X_test):
+        X_preprocessor = cts.column_transformer(numeric_features, categorical_features)
+        X_train_transformed_data = X_preprocessor.fit_transform(X_train)
+        X_test_transformed_data = X_preprocessor.transform(X_test)
+        return X_preprocessor, X_train_transformed_data, X_test_transformed_data
+        
+    def dataprocessing(self, cts=None, ctpath=None, lepath=None, custom=None):
         y_encoder = None
         if self.y.dtype == "O":
-            if not os.path.exists(lepath):
-                    y_encoder = cts.label_encoder()
-                    self.y = y_encoder.fit_transform(self.y)
+            if custom != None:
+                y_encoder = self.encoder(cts)
             else:
-                y_encoder = load_pkl_file(lepath)
-                self.y = y_encoder.transform(self.y)
+                if not os.path.exists(lepath):
+                    y_encoder = self.encoder(cts)
+                else:
+                    y_encoder = load_pkl_file(lepath)
+                    self.y = y_encoder.transform(self.y)
 
         X_train, X_test, y_train, y_test = cts.get(self.X, self.y)
         numeric_features, categorical_features = self.columns_split()
-        
-        if not os.path.exists(ctpath):
-            X_preprocessor = cts.column_transformer(numeric_features, categorical_features)
-            X_train_transformed_data = X_preprocessor.fit_transform(X_train)
-            X_test_transformed_data = X_preprocessor.transform(X_test)
+        if custom != None:
+            X_preprocessor, X_train_transformed_data, X_test_transformed_data = self.xencoder(cts, numeric_features, categorical_features, X_train, X_test)
         else:
-            X_preprocessor = load_pkl_file(ctpath)
-            X_train_transformed_data = X_preprocessor.transform(X_train)
-            X_test_transformed_data = X_preprocessor.transform(X_test)
+            if not os.path.exists(ctpath):
+                X_preprocessor, X_train_transformed_data, X_test_transformed_data = self.xencoder(cts, numeric_features, categorical_features, X_train, X_test)
+            else:
+                X_preprocessor = load_pkl_file(ctpath)
+                X_train_transformed_data = X_preprocessor.transform(X_train)
+                X_test_transformed_data = X_preprocessor.transform(X_test)
 
         
         return X_train_transformed_data, X_test_transformed_data, y_train, y_test, X_preprocessor, y_encoder

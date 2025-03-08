@@ -1,8 +1,10 @@
 import pandas as pd
+import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit as st
+from src.helper import safe_float
 
 
 
@@ -202,7 +204,33 @@ def charts_page(data):
             st.pyplot(Correlation_Map(data)) 
             
 def display_dataset_results(dic):
-    st.dataframe(pd.DataFrame(dic).T)
+    data_ref = []
+    for model, model_results in dic.items():
+        train_results = model_results["train_model_result"]
+        test_results = model_results["test_model_result"]
+        
+        row = {
+            "Model": model,
+            "Train Accuracy": round(train_results["accuracy"], 4),
+            "Train Precision": round(train_results["precision"], 4),
+            "Train Recall": round(train_results["recall"], 4),
+            "Train F1-Score": round(train_results["f1_score"], 4),
+            "Train ROC AUC": round(safe_float(train_results.get("roc_auc", np.nan)), 4),
+            "Train Inference Time": round(train_results["inf_time"], 6),  # Kept more precision for small values
+            "Test Accuracy": round(test_results["accuracy"], 4),
+            "Test Precision": round(test_results["precision"], 4),
+            "Test Recall": round(test_results["recall"], 4),
+            "Test F1-Score": round(test_results["f1_score"], 4),
+            "Test ROC AUC": round(safe_float(test_results.get("roc_auc", np.nan)), 4),
+            "Test Inference Time": round(test_results["inf_time"], 6),
+            "Training Time": round(model_results["training_time"], 4),
+            "File Size (MB)": round(model_results["file_size_mb"] / 1024, 4),
+        }
+
+        
+    
+        data_ref.append(row)
+    st.dataframe(pd.DataFrame(data_ref))
     
 def display_stats(data):
     st.dataframe(pd.DataFrame(data.describe()).T, use_container_width=True)

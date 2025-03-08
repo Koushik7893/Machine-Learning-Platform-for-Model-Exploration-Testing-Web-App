@@ -1,5 +1,7 @@
 import os
 import pickle
+import math
+import numpy as np
 import json
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, precision_score, recall_score, f1_score, roc_auc_score
 from sklearn.metrics import mean_absolute_error, mean_squared_error, root_mean_squared_error, r2_score
@@ -55,23 +57,25 @@ def load_pkl_file(file_path):
     with open(file_path, "rb") as file:
         return pickle.load(file)
     
-def compute_classification_results(y_true, y_pred):
+def compute_classification_results(y_true, y_pred, com_time):
     results = {
         'accuracy': accuracy_score(y_true, y_pred),
         'precision': precision_score(y_true, y_pred, average='weighted'), 
         'recall': recall_score(y_true, y_pred, average='weighted'),
         'f1_score': f1_score(y_true, y_pred, average='weighted'),
     #   'classification_report': classification_report(y_true, y_pred, output_dict=True),  
-        'roc_auc': roc_auc_score(y_true, y_pred, average='weighted', multi_class='ovr') if len(set(y_true)) == 2 else 'N/A'
+        'roc_auc': roc_auc_score(y_true, y_pred, average='weighted', multi_class='ovr') if len(set(y_true)) == 2 else 'N/A',
+        'inf_time' : com_time
     }
     return results
 
-def compute_regression_results(y_true, y_pred):
+def compute_regression_results(y_true, y_pred, com_time):
     results = {
         'mae': mean_absolute_error(y_true, y_pred),
         'mse': mean_squared_error(y_true, y_pred),
         'rmse': root_mean_squared_error(y_true, y_pred),  
         'r2_score': r2_score(y_true, y_pred),
+        'inf_time' : com_time
     }
     return results
 
@@ -104,3 +108,14 @@ def all_results_json(results):
                 
     else:
         return json_as(path=path, results=results)
+    
+    
+
+
+def safe_float(value):
+    """Convert to float safely, keeping NaN values intact."""
+    try:
+        num = float(value)
+        return num if not math.isnan(num) else np.nan  # Keep NaN instead of 0
+    except (ValueError, TypeError):
+        return np.nan  # Return NaN for invalid values

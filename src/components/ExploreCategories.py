@@ -5,6 +5,7 @@ from sklearn.metrics import confusion_matrix
 import streamlit as st
 import seaborn as sns
 from itertools import product
+from src.helper import safe_float
 from src.Trainer import CategoryTrainer
 
 def plot_fitted_vs_original(y_true, y_pred):
@@ -28,32 +29,87 @@ def classification_cov_matrix(y_true, y_pred):
 def category_datasets_results(dic):
     for dataset_name, models in dic.items():
         st.header(dataset_name)
+        
         col1, col2 = st.columns(2)
-        metrics_df = pd.DataFrame(models).T
+        
+        data = []
+        for model_name, model_results in models.items():
+            train_results = model_results.get("train_model_result", {})
+            test_results = model_results.get("test_model_result", {})
+
+            data.append({
+                "Model": model_name,
+                "Train Accuracy": round(train_results.get("accuracy", 0), 4),
+                "Test Accuracy": round(test_results.get("accuracy", 0), 4),
+                "Train Precision": round(train_results.get("precision", 0), 4),
+                "Test Precision": round(test_results.get("precision", 0), 4),
+                "Train Recall": round(train_results.get("recall", 0), 4),
+                "Test Recall": round(test_results.get("recall", 0), 4),
+                "Train F1-Score": round(train_results.get("f1_score", 0), 4),
+                "Test F1-Score": round(test_results.get("f1_score", 0), 4),
+                "Train ROC AUC": round(safe_float(train_results.get("roc_auc", np.nan)), 4),
+                "Test ROC AUC": round(safe_float(test_results.get("roc_auc", np.nan)), 4),
+                "Train Inference Time": round(train_results.get("inf_time", 0), 6),  # Higher precision
+                "Test Inference Time": round(test_results.get("inf_time", 0), 6),
+                "Training Time": round(model_results.get("training_time", 0), 4),
+                "File Size (MB)": round(model_results.get("file_size_mb", 0) / 1024, 4),
+            })
+        
+        metrics_df = pd.DataFrame(data).set_index("Model")
+        
         col1.dataframe(metrics_df)
+        
         fig, ax = plt.subplots()
         fig.patch.set_facecolor("black")
         ax.set_facecolor("black") 
-        ax.barh(metrics_df.index[::-1], metrics_df['accuracy'][::-1], color="#045e54")
+        
+        ax.barh(metrics_df.index[::-1], metrics_df["Test Accuracy"][::-1], color="#045e54") 
         ax.set_xlabel("Accuracy", color="white")
-        ax.tick_params(axis='x', colors="white")  # Set x-axis tick color to white
-        ax.tick_params(axis='y', colors="white")
+        ax.tick_params(axis='x', colors="white")  
+        ax.tick_params(axis='y', colors="white") 
         col2.pyplot(fig)
 
         
 def category_models_results(results, models):
     for model in models.keys():
         results_mod = {}
-        for dataset_name, models in results.items():
-            results_mod[dataset_name] = models[model]
+
+        for dataset_name, dataset_models in results.items():
+            if model in dataset_models:  # Check if model exists in dataset
+                train_results = dataset_models[model].get("train_model_result", {})
+                test_results = dataset_models[model].get("test_model_result", {})
+
+                results_mod[dataset_name] = {
+                    "Train Accuracy": round(train_results.get("accuracy", 0), 4),
+                    "Test Accuracy": round(test_results.get("accuracy", 0), 4),
+                    "Train Precision": round(train_results.get("precision", 0), 4),
+                    "Test Precision": round(test_results.get("precision", 0), 4),
+                    "Train Recall": round(train_results.get("recall", 0), 4),
+                    "Test Recall": round(test_results.get("recall", 0), 4),
+                    "Train F1-Score": round(train_results.get("f1_score", 0), 4),
+                    "Test F1-Score": round(test_results.get("f1_score", 0), 4),
+                    "Train ROC AUC": round(safe_float(train_results.get("roc_auc", np.nan)), 4),
+                    "Test ROC AUC": round(safe_float(test_results.get("roc_auc", np.nan)), 4),
+                    "Train Inference Time": round(train_results.get("inf_time", 0), 6),  # More precision for small times
+                    "Test Inference Time": round(test_results.get("inf_time", 0), 6),    # More precision for small times
+                    "Training Time": round(dataset_models[model].get("training_time", 0), 4),
+                    "File Size (MB)": round(dataset_models[model].get("file_size_mb", 0) / 1024, 4),
+                }
+
+        if not results_mod:
+            continue
+
         st.header(model)
         col1, col2 = st.columns(2)
+
         metrics_df = pd.DataFrame(results_mod).T
         col1.dataframe(metrics_df)
-        col2.bar_chart(metrics_df['accuracy'][::-1],color="#045e54", horizontal=True, x_label='Accuracy')
+
+        accuracy_df = metrics_df[["Test Accuracy"]].sort_values(by="Test Accuracy", ascending=False)
+        col2.bar_chart(accuracy_df)
 
 
-def category_clf_params(params, models_options):
+def category_clf_params(params, models_options, custom=False):
     param = params[models_options]
     c1, c2, c3, c4 = st.columns(4)
     if len([par['Parameter'] for par in param]) > 4:
@@ -121,8 +177,9 @@ def category_clf_params(params, models_options):
         learning_rate = c3.text_input('Boosting learning rate', '0.3', help="Boosting learning rate. Default is 0.3.").split(',')
         subsample = c4.text_input('Fraction of samples used for training', '1.0', help="Fraction of samples used for training. Default is 1.0.").split(',')
         parameters = {'n_estimators':n_estimators, 'max_depth':max_depth, 'learning_rate':learning_rate,  'subsample':subsample}
-
-    if st.button("Submit", type="primary"):
+    if custom:
+        return parameters
+    elif st.button("Submit", type="primary"):
         return parameters
     else:
         return None
@@ -209,7 +266,32 @@ def category_reg_params(params, models_options):
     else:
         return None
 
-    
+def rearrange_params(params, models_options, parameters):
+    param = params[models_options]
+    param_names = [par['Parameter'] for par in param]
+    param_dict = {}
+    for name, listn in parameters.items():
+        if name in param_names:
+            param_info = param[param_names.index(name)]
+            dtype = param_info['Dtype']
+            mod_params = []
+            try:
+                if 'str' not in dtype:
+                    if 'int' in dtype:
+                        mod_params = [int(i.strip()) for i in listn]
+                    elif 'float' in dtype:
+                        mod_params = [float(i.strip()) for i in listn]
+                    elif 'bool' in dtype:
+                        mod_params = [bool(i.strip()) for i in listn]
+                else:
+                    mod_params = listn
+            except ValueError:
+                st.write(f"Error processing {name}. Please check input values.")
+            param_dict[name] = mod_params
+    filtered_params = {k: v for k, v in param_dict.items() if v}
+    combinations = list(product(*filtered_params.values()))
+    all_combinations = [dict(zip(filtered_params.keys(), val)) for val in combinations]
+    return all_combinations, len(combinations)
     
 def category_train(params, datasets, models, category):
     datasets_list = list(datasets.keys())
@@ -229,31 +311,7 @@ def category_train(params, datasets, models, category):
             parameters = category_reg_params(params, models_options)
     
     if parameters is not None and datasets_options:
-        param = params[models_options]
-        param_names = [par['Parameter'] for par in param]
-        param_dict = {}
-        for name, listn in parameters.items():
-            if name in param_names:
-                param_info = param[param_names.index(name)]
-                dtype = param_info['Dtype']
-                mod_params = []
-                try:
-                    if 'str' not in dtype:
-                        if 'int' in dtype:
-                            mod_params = [int(i.strip()) for i in listn]
-                        elif 'float' in dtype:
-                            mod_params = [float(i.strip()) for i in listn]
-                        elif 'bool' in dtype:
-                            mod_params = [bool(i.strip()) for i in listn]
-                    else:
-                        mod_params = listn
-                except ValueError:
-                    st.write(f"Error processing {name}. Please check input values.")
-                param_dict[name] = mod_params
-        filtered_params = {k: v for k, v in param_dict.items() if v}
-        combinations = list(product(*filtered_params.values()))
-        all_combinations = [dict(zip(filtered_params.keys(), val)) for val in combinations]
-        num_combinations = len(combinations) 
+        all_combinations, num_combinations = rearrange_params(params, models_options, parameters)
         rows = (num_combinations + 1) // 2  
         for i in range(rows):
             col = st.columns(2)

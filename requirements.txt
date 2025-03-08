@@ -19,3 +19,4 @@ werkzeug
 transformers
 openai
 langchain-openai
+mlflow
