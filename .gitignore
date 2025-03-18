@@ -6,3 +6,4 @@ artifacts/all_results.json
 artifacts/datasets_info.json
 misc.txt
 .env
+database

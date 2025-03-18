@@ -2,6 +2,7 @@ from src.components.DataIngestion import Data
 from src.pipelines.Models import ModelIntializer
 from src.pipelines.ModelParams import ParamsInit
 from src.components.DataTransformation import ColumnTransformWithSplit
+from sklearn.metrics import accuracy_score
 from src.helper import datasets_path, save_pkl_file, load_pkl_file, compute_classification_results, compute_regression_results, all_results_json, datasets_info
 import os
 import time
@@ -157,3 +158,111 @@ class CustomTrainer:
                         'training_time':train_inf_time
                         }         
         return model_result, model
+    
+    def optuna_trainer(self, available_params, model_name, parameters, n_trials):
+        para = available_params[model_name]
+        param_names = [par['Parameter'] for par in para]
+        def objective(trial):
+                param_dict = {}
+                for name, listn in parameters.items():
+                    if listn:
+                        if name in param_names:
+                            param_info = para[param_names.index(name)]
+                            dtype = param_info['Dtype']
+                            mod_params = []
+                            try:
+                                if 'str' not in dtype:
+                                    if 'int' in dtype:
+                                        mod_params = [int(i.strip()) for i in listn]
+                                        s = trial.suggest_int(name, mod_params[0], mod_params[1])
+                                    elif 'float' in dtype:
+                                        mod_params = [float(i.strip()) for i in listn]
+                                        s = trial.suggest_float(name, mod_params[0], mod_params[1])
+                                    elif 'bool' in dtype:
+                                        mod_params = [bool(i.strip()) for i in listn]
+                                        s = trial.suggest_categorical(name, mod_params)
+                                    
+                                else:
+                                    mod_params = listn
+                                    s = trial.suggest_categorical(name, mod_params)
+                            except Exception as e:
+                                raise e
+                                
+                            param_dict[name] = s
+                model = mod_int.model_intializer(model_name, self.typetotrain)()
+                model.set_params(**param_dict)
+                model.fit(self.x_train, self.y_train)
+
+                y_pred = model.predict(self.x_test)
+                accuracy = accuracy_score(self.y_test, y_pred)
+                
+                return accuracy
+            
+        return params_init.Optuna_tuning(objective, n_trials)
+    
+    def gridcv_trainer(self,  available_params, model_name, parameters):
+        para = available_params[model_name]
+        param_names = [par['Parameter'] for par in para]
+        param_dict = {}
+        for name, listn in parameters.items():
+            if listn:
+                if name in param_names:
+                    param_info = para[param_names.index(name)]
+                    dtype = param_info['Dtype']
+                    mod_params = []
+                    try:
+                        if 'str' not in dtype:
+                            if 'int' in dtype:
+                                mod_params = [int(i.strip()) for i in listn]
+                            elif 'float' in dtype:
+                                mod_params = [float(i.strip()) for i in listn]
+                            elif 'bool' in dtype:
+                                mod_params = [bool(i.strip()) for i in listn]
+                        else:
+                            mod_params = listn
+                    except Exception as e:
+                        raise e
+                        
+                    param_dict[name] = mod_params
+        
+        model = mod_int.model_intializer(model_name, self.typetotrain)()
+        search = params_init.Grid_SearchCV(self.typetotrain, model, param_dict)
+        search.fit(self.x_train, self.y_train)
+        return search
+    
+    
+    def randomcv_trainer(self,  available_params, model_name, parameters):
+        para = available_params[model_name]
+        param_names = [par['Parameter'] for par in para]
+        param_dict = {}
+        for name, listn in parameters.items():
+            if name in param_names:
+                param_info = para[param_names.index(name)]
+                dtype = param_info['Dtype']
+                mod_params = []
+                try:
+                    if 'str' not in dtype:
+                        if 'int' in dtype:
+                            mod_params = [int(i.strip()) for i in listn]
+                        elif 'float' in dtype:
+                            mod_params = [float(i.strip()) for i in listn]
+                        elif 'bool' in dtype:
+                            mod_params = [bool(i.strip()) for i in listn]
+                    else:
+                        mod_params = listn
+                except Exception as e:
+                    raise e
+                    
+                param_dict[name] = mod_params
+        
+        model = mod_int.model_intializer(model_name, self.typetotrain)()
+        search = params_init.Randomized_SearchCV(self.typetotrain, model, param_dict)
+        search.fit(self.x_train, self.y_train)
+        return search
+    
+    
+    def tpot_trainer(self):
+        X_train, X_test, y_train, y_test, _, _ = self.data_class.dataprocessing(cts=columntransformsplit, custom=True)
+        finder = params_init.tpot_tuner()
+        finder.fit(X_train, y_train)
+        return finder, finder.score(X_test, y_test)

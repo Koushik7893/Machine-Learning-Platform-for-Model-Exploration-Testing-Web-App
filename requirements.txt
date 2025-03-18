@@ -20,3 +20,8 @@ transformers
 openai
 langchain-openai
 mlflow
+optuna
+tpot
+auto-sklearn
+plotly
+shap

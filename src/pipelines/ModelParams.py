@@ -1,5 +1,8 @@
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.model_selection import KFold, StratifiedKFold, LeaveOneOut
+import optuna
+from tpot import TPOTClassifier
+# import autosklearn.classification
 import numpy as np
 
 available_params_1 = {
@@ -349,16 +352,14 @@ class ParamsInit:
     def __init__(self):
         self.params = params
     
-    def Grid_SearchCV(self,typetotrain, model, model_name):
-        model_params = self.params[model_name]
+    def Grid_SearchCV(self,typetotrain, model, model_params):
         if typetotrain == "classification":
             search = GridSearchCV(estimator=model, param_grid=model_params, cv=5, scoring = 'accuracy', n_jobs=-1)
         else:
             search = GridSearchCV(estimator=model, param_grid=model_params, cv=5, scoring = 'neg_mean_squared_error', n_jobs=-1)
         return search
     
-    def Randomized_SearchCV(self,typetotrain, model, model_name):
-        model_params = self.params[model_name]
+    def Randomized_SearchCV(self,typetotrain, model, model_params):
         count = 0
         for i in model_params.values():
             count += len(i)
@@ -368,3 +369,14 @@ class ParamsInit:
         else:
             search = RandomizedSearchCV(estimator=model, param_grid=model_params, cv=5, scoring = 'neg_mean_squared_error', n_iter=n_iter, n_jobs=-1)
         return search
+    
+    def Optuna_tuning(self, objective, n_trials):
+        study = optuna.create_study(direction="maximize")
+        study.optimize(objective, n_trials=n_trials)
+        
+        return study
+    
+    
+    def tpot_tuner(self):
+        tpot = TPOTClassifier(generations=5, population_size=20, verbosity=2, random_state=42)
+        return tpot

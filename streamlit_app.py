@@ -4,32 +4,32 @@ import pandas as pd
 from src.helper import datasets_dict, json_load, datasets_path, json_as
 from src.components.DataIngestion import Data
 from src.components.ExploreDataset import data_info, data_info2, data_val, charts_page, display_dataset_results, display_model_parameters, display_model_with_parameters, display_stats
-from src.components.ExploreModels import datasets_info, display_model_results, display_params, explore_model, custom
+from src.components.ExploreModels import datasets_info, display_model_results, display_params, explore_model, custom, optuna_params, random_cv_params, grid_cv_params, tpot_searcher
 from src.components.ExploreCategories import category_datasets_results, category_models_results, category_train, category_clf_params, category_reg_params, rearrange_params
 from src.pipelines.ModelParams import available_params
 from src.pipelines.Models import model_dict
 from src.components.ChatBot import AIChatbot
-import psycopg2
-# import sqlite3
+# import psycopg2
+import sqlite3
 import os
 
 
 # ----------------------------------------------------------------------------
 
-# from dotenv import load_dotenv
-# load_dotenv()
-DATABASE_URL = os.getenv("DATABASE_URI")
+# # from dotenv import load_dotenv
+# # load_dotenv()
+# DATABASE_URL = os.getenv("DATABASE_URI")
 
 
-def connect_sql():
-    return psycopg2.connect(DATABASE_URL)
+# def connect_sql():
+#     return psycopg2.connect(DATABASE_URL)
 
 # --------------------------------------------------------------------------------------------------------------------------------------------
 
-# DB_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), "database.db")
+DB_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), "database.db")
 
-# def connect_sql():
-#     return sqlite3.connect(DB_PATH)
+def connect_sql():
+    return sqlite3.connect(DB_PATH)
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ def connect_sql():
 def fetch_api_key(user_id):
     conn = connect_sql()
     cur = conn.cursor()
-    cur.execute("SELECT groq_api_key FROM users WHERE id = %s", (user_id,))
+    cur.execute("SELECT groq_api_key FROM users WHERE id = ?", (user_id,))
     row = cur.fetchone()
     conn.close()
     return row[0] if row and row[0] else None
@@ -45,14 +45,14 @@ def fetch_api_key(user_id):
 def save_api_key(user_id, api_key):
     conn = connect_sql()
     cur = conn.cursor()
-    cur.execute("UPDATE users SET groq_api_key = %s WHERE id = %s", (api_key, user_id))
+    cur.execute("UPDATE users SET groq_api_key = ? WHERE id = ?", (api_key, user_id))
     conn.commit()
     conn.close()     
 
 def get_user_sessions(user_id):
     conn = connect_sql()
     cur = conn.cursor()
-    cur.execute("SELECT session_id FROM sessions WHERE user_id = %s ORDER BY created_at", (user_id,))
+    cur.execute("SELECT session_id FROM sessions WHERE user_id = ? ORDER BY created_at", (user_id,))
     sessions = [row[0] for row in cur.fetchall()]
     conn.close()
     return sessions
@@ -60,14 +60,14 @@ def get_user_sessions(user_id):
 def create_session(session_id, user_id):
     conn = connect_sql()
     cur = conn.cursor()
-    cur.execute("INSERT INTO sessions (user_id, session_id) VALUES (%s, %s)", (user_id, session_id))
+    cur.execute("INSERT INTO sessions (user_id, session_id) VALUES (?, ?)", (user_id, session_id))
     conn.commit()
     conn.close()
 
 def get_chat_history(session_id):
     conn = connect_sql()
     cur = conn.cursor()
-    cur.execute("SELECT user_message, bot_response FROM chat_history WHERE session_id = %s ORDER BY timestamp", (session_id,))
+    cur.execute("SELECT user_message, bot_response FROM chat_history WHERE session_id = ? ORDER BY timestamp", (session_id,))
     history = cur.fetchall()
     conn.close()
     formatted_history = []
@@ -79,7 +79,7 @@ def get_chat_history(session_id):
 def save_chat_response(session_id, user_message, bot_response):
     conn = connect_sql()
     cur = conn.cursor()
-    cur.execute("INSERT INTO chat_history (session_id, user_message, bot_response) VALUES (%s, %s, %s)",
+    cur.execute("INSERT INTO chat_history (session_id, user_message, bot_response) VALUES (?, ?, ?)",
                 (session_id, user_message, bot_response))
     conn.commit()
     conn.close()
@@ -279,14 +279,15 @@ def model(select, model_name, types):
     
     
     if select =='explore_parameters':
-        tab1, tab2, tab3 = st.tabs(["Model Results", "Model Params", "Data Info"])
-        with tab1:
-            display_model_with_parameters(available_params, model_dict[types])
-        with tab2:
-            datasets_info(types, info)
-        with tab3:
-            # explore_model(types, model_name, params, results[types], model_dict[types])
-            pass
+        option = st.selectbox('Select one:', ['Optuna', 'Grid_Search', 'Random_Search', 'TPOT'])
+        if option == 'Optuna':
+            optuna_params(types, model_name, available_params, display_params)
+        elif option == 'Grid_Search':
+            grid_cv_params(types, model_name, available_params, display_params, category_clf_params, category_reg_params)
+        elif option == 'Random_Search':
+            random_cv_params(types, model_name, available_params, display_params, category_clf_params, category_reg_params)
+        else:
+            tpot_searcher(types, model_name, available_params,model_dict[types], display_model_with_parameters)
             
     if select =='custom_data':
         custom(types, model_name, available_params, category_clf_params, category_reg_params, rearrange_params, display_params)

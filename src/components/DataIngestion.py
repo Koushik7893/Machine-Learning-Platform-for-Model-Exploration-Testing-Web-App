@@ -23,7 +23,10 @@ class Data:
         self.target = target
     
     def get_columns(self):
-        return self.data.columns        
+        return self.data.columns  
+    
+    def get_x_columns(self):
+        return self.X.columns  
     
     def info(self):
         return self.data.info()
@@ -48,7 +51,10 @@ class Data:
         X_train_transformed_data = X_preprocessor.fit_transform(X_train)
         X_test_transformed_data = X_preprocessor.transform(X_test)
         return X_preprocessor, X_train_transformed_data, X_test_transformed_data
-        
+    
+    def split(self, cts):
+        return cts.get(self.X, self.y)
+    
     def dataprocessing(self, cts=None, ctpath=None, lepath=None, custom=None):
         y_encoder = None
         if self.y.dtype == "O":

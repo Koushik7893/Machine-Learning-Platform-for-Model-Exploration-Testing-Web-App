@@ -2,7 +2,7 @@ from flask import Flask, render_template, redirect, url_for, request, jsonify, f
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
-from flask_migrate import Migrate
+# from flask_migrate import Migrate
 import datetime
 from src.pipelines.Models import model_dict
 from src.components.ChatBot import AIChatbot
@@ -12,16 +12,16 @@ from src.helper import datasets_path, json_load
 import os
 # from dotenv import load_dotenv
 # load_dotenv()
-DATABASE_URL = os.getenv("DATABASE_URI")
+# DATABASE_URL = os.getenv("DATABASE_URI")
 
 
 app = Flask(__name__)
 
-# BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-# app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(BASE_DIR, "database.db")}'
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(BASE_DIR, "database.db")}'
 
 
-app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+# app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = "your_secret_key_here"
 
@@ -29,7 +29,7 @@ app.config["SECRET_KEY"] = "your_secret_key_here"
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 
-migrate = Migrate(app, db)
+# migrate = Migrate(app, db)
 
 
 
@@ -293,12 +293,12 @@ def explore():
     if "user_id" not in session:
         return redirect(url_for('login'))
     
-    return redirect(f"http://54.221.157.126:8501/?page={which}&select={option}&name={name}&types={types}&session={session['user_id']}")
-    # return redirect(f"http://localhost:8501/?page={which}&select={option}&name={name}&types={types}&session={session['user_id']}")
+    # return redirect(f"http://54.221.157.126:8501/?page={which}&select={option}&name={name}&types={types}&session={session['user_id']}")
+    return redirect(f"http://localhost:8501/?page={which}&select={option}&name={name}&types={types}&session={session['user_id']}")
 
 
 if __name__ == '__main__':
-    # with app.app_context():
-    #     db.create_all()
-    # app.run(debug=True)
-    app.run(host='0.0.0.0', port=5000)
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
+    # app.run(host='0.0.0.0', port=5000)
