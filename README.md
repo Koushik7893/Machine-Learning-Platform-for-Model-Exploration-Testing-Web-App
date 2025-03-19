@@ -1,4 +1,4 @@
-# **Machine Learning & Deep Learning Web App**  
+# **Machine Learning Platform for Model Exploration, Testing Web App**  
 
 ## 📌 Project Overview
 
