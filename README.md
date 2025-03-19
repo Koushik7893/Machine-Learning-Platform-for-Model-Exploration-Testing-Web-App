@@ -1,81 +1,120 @@
 # **Machine Learning & Deep Learning Web App**  
 
-## 🌟 **Overview**  
-This project is a **full-stack Machine Learning and Deep Learning web application** that allows users to:  
-✅ Upload and train models on **classification, regression, time series, and image classification** tasks.  
-✅ **Select and visualize** dataset properties and model performance.  
-✅ **Test models with custom inputs** and compare different approaches.  
-✅ **Interact with a chatbot** (powered by **ChatGroq API**).  
-✅ **Track experiments and manage models** using **MLflow & Airflow**.  
-✅ **Store and retrieve data** via **PostgreSQL & AWS S3**.  
+## 📌 Project Overview
 
----
+This project is a **machine learning and deep learning web application** developed using **Flask and Streamlit**. It provides an interactive platform for dataset exploration, model evaluation, AutoML, and chatbot interaction, integrated with **MLOps & CI/CD pipelines**.
 
-## 🎯 **How It Works**  
+## 🚀 Features
 
-### 🔹 **1. Interactive Model Training & Analysis**  
-- Users can upload datasets and train **classification, regression, and time series models**.  
-- The app supports various models, including **SVM, Random Forest, CNN, LSTM, and KNN**.  
-- **Dimensionality Reduction techniques** (PCA, SVD, ICA, NMF, Factor Analysis) help analyze data patterns.  
-- Users can visualize **model accuracy, feature importance, loss curves, and predictions**.  
+### 🔹 User Authentication
 
-### 🔹 **2. User Authentication & Session Management**  
-- Users can **register and log in** with authentication stored in **PostgreSQL**.  
-- **Session-based chat history** is maintained, similar to ChatGPT’s interface.  
-- Each user’s interactions, dataset uploads, and model training history are stored securely.  
+- **Login, Register, Logout, Profile Page**
+- **User data stored in AWS-hosted PostgreSQL**
 
-### 🔹 **3. AI Chatbot Integration**  
-- The chatbot, powered by the **ChatGroq API**, assists users with ML concepts and application usage.  
-- Users can ask questions related to dataset selection, model performance, or general AI topics.  
-- Chat history is stored and accessible for each session.  
+### 🔹 Home Page
 
-### 🔹 **4. MLOps & Experiment Tracking**  
-- **MLflow is integrated** for model tracking and versioning.  
-- **Airflow automates time series data ingestion and processing**, storing results in **AWS PostgreSQL**.  
-- Users can **view experiment logs, compare models, and analyze trends**.  
+- Three primary options:
+  1. **Explore Datasets**
+  2. **Explore Models**
+  3. **Models via Categories**
 
-### 🔹 **5. Data Storage & Management**  
-- **AWS S3 stores datasets and trained models**, ensuring efficient storage and retrieval.  
-- **PostgreSQL manages user authentication, chat history, and model metadata**.  
+### 🔹 Dataset Page
 
-### 🔹 **6. Web App Frontend & Visualization**  
-- The **Flask backend handles API requests, authentication, and chatbot interactions**.  
-- The **Streamlit frontend provides an interactive interface** for dataset selection, model training, and result visualization.  
-- Users can see **performance metrics, graphs comparing different models, and dataset statistics**.  
+- **Preloaded datasets**: 5 for classification, 5 for regression
+- **User-uploaded dataset support**
+- **Dataset visualization** using Seaborn (various plots)
+- **Exploratory Data Analysis (EDA)**
+- **Pretrained model results** displayed for each dataset
 
-### 🔹 **7. Model Deployment & API Access**  
-- Models are **stored and versioned**, allowing users to test different versions on new data.  
-- A **custom API endpoint** enables real-time model inference.  
-- Users can manually input feature values and get **instant predictions**.  
+### 🔹 Model Page
 
----
+- **Pretrained Model Results** on default datasets
+- **AutoML Support** using TPOT & Optuna
+- **Hyperparameter Tuning** with GridCV & RandomCV
+- **Custom Model Exploration** with user-defined parameters
+- **SHAP Analysis** for model interpretability
+- **MLflow Integration** via Airflow (users register MLflow repo details)
 
-## 🚀 **Deployment & Cloud Integration**  
+### 🔹 Categories Page
 
-### **1️⃣ AWS PostgreSQL & S3**  
-- **PostgreSQL stores user data, chat history, and experiment logs**.  
-- **S3 stores trained models and datasets**, allowing efficient retrieval.  
+- View **all model results on a custom dataset**
+- Parameter selection & hyperparameter tuning
+- **Comparison of all model parameters**
+- **Confusion matrices for classification** & **regression graphs**
+- **Model comparison feature (in progress)**
 
-### **2️⃣ Airflow for Time Series Processing**  
-- **Fetches, cleans, and stores time series data daily** without interrupting the app.  
+### 🔹 Chatbot Integration
 
-### **3️⃣ MLflow for Model Management**  
-- Keeps track of **model versions, hyperparameters, and performance metrics**.  
-- Users can compare **accuracy, precision, recall, and loss curves** over multiple training runs.  
+- Available in **Flask & Streamlit (sidebar)**
+- Uses **Groq API** for ChatGPT-like responses
+- Integrated with **Wikipedia & YouTube search tools**
+- **User sessions stored in AWS-hosted PostgreSQL**
+- **Upcoming retrieval-based chatbot using pincode**
 
----
+### 🔹 CI/CD Pipeline
 
-## 📊 **Visualization & Insights**  
-- **Graphical comparisons** of multiple models' performance.  
-- **Feature importance analysis** for better model interpretability.  
-- **Time series forecasting with performance metrics**.  
+- **Automated Deployment** via GitHub Actions, Docker, and AWS
+- **Workflow:**
+  1. **Commit to GitHub → Docker Image Created**
+  2. **Push to Docker Hub & AWS ECR**
+  3. **Deploy on AWS EC2**
 
----
+### 🔹 Upcoming Enhancements
 
-## 🛠 **Future Enhancements**  
-✔ Add **Google/GitHub login support**.  
-✔ Implement **multi-model comparison UI** in Streamlit.  
-✔ Automate **Docker-based deployment**.  
-✔ Enable **real-time ML model serving (FastAPI, Flask)**.  
+- **Retrieval-based chatbot using pincode**
+- **Model comparison in the categories page**
+- **Task scheduling & automation with Airflow**
 
-This project **demonstrates full-stack ML/DL capabilities** with **Flask, Streamlit, PostgreSQL, AWS, Airflow, and MLflow**, making it an **impressive fresher portfolio project**. 🚀
+## 🛠️ Tech Stack
+
+- **Frontend & UI**: Flask, Streamlit, Seaborn (for visualization)
+- **Backend**: Flask, PostgreSQL (AWS-hosted), SQLAlchemy
+- **Machine Learning**: Scikit-learn, TensorFlow, PyTorch
+- **AutoML**: TPOT, Optuna
+- **MLOps**: MLflow, Apache Airflow
+- **Deployment**: Docker, AWS (EC2, ECR, S3), GitHub Actions
+
+## 🔧 Installation & Setup
+
+### 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/your-repo/ml-dl-webapp.git
+cd ml-dl-webapp
+```
+
+### 2️⃣ Set Up a Virtual Environment
+
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+### 3️⃣ Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4️⃣ Run Flask Backend
+
+```bash
+python app.py
+```
+
+### 5️⃣ Run Streamlit Frontend
+
+```bash
+streamlit run streamlit_app.py
+```
+
+### 6️⃣ Access the Application
+
+- **Flask Backend**: `http://localhost:5000`
+- **Streamlit Frontend**: `http://localhost:8501`
+
+
+## 📝 License
+
+This project is licensed under the MIT License.
+
