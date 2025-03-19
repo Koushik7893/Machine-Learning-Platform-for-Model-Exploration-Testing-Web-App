@@ -197,10 +197,18 @@ def sidebar(user_id):
         st.sidebar.write(f"**{role}:** {msg['content']}")
 
     # Chat input
-    question = st.sidebar.text_input("Type your message here...")
+    col1, col2 = st.sidebar.columns([4, 1])
+    with col1:
+        question = st.text_input("Type your message here...", key="search_query")
+
+    # Search button in the second column
+    with col2:
+        search_clicked = st.button("🔍")
+        
+        
     if st.sidebar.button("Send"):
         if question and selected_session:
-            bot_response = chatbot_model.generate_response(question, st.session_state.chat_history)
+            bot_response = chatbot_model.generate_response(question, st.session_state.chat_history, search_clicked)
             save_chat_response(selected_session, question, bot_response)
 
             # Append to session state instead of causing a full rerun

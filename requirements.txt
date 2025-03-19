@@ -25,3 +25,5 @@ tpot
 auto-sklearn
 plotly
 shap
+pinecone-client 
+# pinecone-text 
