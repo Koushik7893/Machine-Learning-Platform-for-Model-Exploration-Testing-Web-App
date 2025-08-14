@@ -22,8 +22,8 @@ langchain-openai
 mlflow
 optuna
 tpot
-auto-sklearn
+# auto-sklearn
 plotly
 shap
-pinecone-client 
+# pinecone-client 
 # pinecone-text 

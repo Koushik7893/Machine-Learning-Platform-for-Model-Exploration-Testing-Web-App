@@ -7,10 +7,10 @@ from langchain_community.utilities import ArxivAPIWrapper, WikipediaAPIWrapper
 from langchain_community.tools import ArxivQueryRun, WikipediaQueryRun, DuckDuckGoSearchRun
 from langchain.agents import initialize_agent, AgentType
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain.callbacks import StreamlitCallbackHandler
+# from langchain.callbacks import StreamlitCallbackHandler
 import streamlit as st
 # from langchain_community.retrievers import PineconeHybridSearchRetriever
-from pinecone import Pinecone
+# from pinecone import Pinecone
 # from pinecone_text.sparse import BM25Encoder
 from langchain_groq import ChatGroq
 from operator import itemgetter
@@ -20,8 +20,8 @@ import os
 
 load_dotenv()
 
-index_name=os.getenv("PINECONE_INDEX_NAME")
-os.environ["HF_TOKEN"]=os.getenv("HF_TOKEN")
+# index_name=os.getenv("PINECONE_INDEX_NAME")
+# os.environ["HF_TOKEN"]=os.getenv("HF_TOKEN")
 
 
 
@@ -32,7 +32,7 @@ api_wrapper=WikipediaAPIWrapper(top_k_results=1,doc_content_chars_max=200)
 wiki=WikipediaQueryRun(api_wrapper=api_wrapper)
 
 tools=[arxiv,wiki]
-st_cb=StreamlitCallbackHandler(st.container(),expand_new_thoughts=False)
+# st_cb=StreamlitCallbackHandler(st.container(),expand_new_thoughts=False)
 
 
 
@@ -78,21 +78,21 @@ def check_history(history):
 
 
 
-def pinecone_retrieval(question):
-    embeddings=HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    pc=Pinecone(api_key=os.getenv("PINECONE_TOKEN"))
-    index=pc.Index(index_name)
+# def pinecone_retrieval(question):
+#     embeddings=HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+#     pc=Pinecone(api_key=os.getenv("PINECONE_TOKEN"))
+#     index=pc.Index(index_name)
     
-    # bm25_encoder=BM25Encoder().load()
-    # retriever=PineconeHybridSearchRetriever(embeddings=embeddings,index=index) ## In case hybrid search sparse_encoder=bm25_encoder
+#     # bm25_encoder=BM25Encoder().load()
+#     # retriever=PineconeHybridSearchRetriever(embeddings=embeddings,index=index) ## In case hybrid search sparse_encoder=bm25_encoder
     
-    query_vector = embeddings.embed_query(question)
-    results = index.query(vector=query_vector, top_k=5, include_metadata=True)
+#     query_vector = embeddings.embed_query(question)
+#     results = index.query(vector=query_vector, top_k=5, include_metadata=True)
 
-    # Extracting relevant metadata (e.g., text content)
-    retrieved_texts = [match["metadata"]["text"] for match in results["matches"] if "metadata" in match]
+#     # Extracting relevant metadata (e.g., text content)
+#     retrieved_texts = [match["metadata"]["text"] for match in results["matches"] if "metadata" in match]
     
-    return retrieved_texts 
+#     return retrieved_texts 
 
 
 
@@ -113,7 +113,7 @@ class AIChatbot:
     def __init__(self, api_key):
         self.api_key = api_key
     
-    def generate_response(self, user_query, chat_history, search):
+    def generate_response(self, user_query, chat_history, search=False):
         """Processes a user query and generates a response using ChatGroq."""
 
         # Initialize LLM model
@@ -157,7 +157,8 @@ class AIChatbot:
             response = chat_chain.invoke({'input': f"Context: {agent_response}\nQuestion: {structured_question}", 'chat_history': chat_history})
             
         else:
-            pinecone_results = pinecone_retrieval(structured_question)
+            # pinecone_results = pinecone_retrieval(structured_question)
+            pinecone_results = False
             if pinecone_results:
                 context = "\n".join(pinecone_results)
                 response = chat_chain.invoke({'input': f"Context: {context}\nQuestion: {structured_question}", 'chat_history': chat_history})
